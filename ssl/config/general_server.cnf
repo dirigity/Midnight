@@ -1,0 +1,11 @@
+[req]
+distinguished_name = req_distinguished_name
+prompt = no
+
+[req_distinguished_name]
+C   = IN
+ST  = Karnataka
+L   = Bengaluru
+O   = GoLinuxCloud
+OU  = R&D
+CN  = 
