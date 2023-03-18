@@ -3,6 +3,7 @@ const fs = require('fs');
 const tls = require("tls");
 const { exec } = require("child_process")
 
+
 async function sh(cmd) {
     return new Promise(function (resolve, reject) {
         exec(cmd, (err, stdout, stderr) => {
@@ -19,21 +20,44 @@ let server;
 
 let secureContextMemo = {};
 
-function getSecureContext(domain, cb) {
+async function getSecureContext(domain, cb) {
     // console.log("certificate for", domain);
+    await add_domain(domain)
+    let key = await tryHardRead('ssl/certs/general/key.pem');
+    let cert = await tryHardRead('ssl/certs/servers/' + domain + "/cert.pem");
+    let ca = await tryHardRead('ssl/certs/ca/ca-cert.pem');
+
+
     if (!secureContextMemo[domain]) {
         secureContextMemo[domain] = tls.createSecureContext({
-            key: fs.readFileSync('ssl/certs/general/key.pem'),
-            cert: fs.readFileSync('ssl/certs/servers/' + domain + "/cert.pem"),
-            ca: fs.readFileSync('ssl/certs/ca/ca-cert.pem')
+            key, cert, ca,
         });
     }
+
+
+
     if (cb) {
         cb(null, secureContextMemo[domain]);
         return
     } else {
         return secureContextMemo[domain]
     }
+}
+
+function tryHardRead(file_path, n = 0) {
+    return new Promise((r) => {
+        fs.readFile(file_path, {}, (err, data) => {
+            if (err) {
+                if (n < 10) {
+                    r(tryHardRead(file_path), n++);
+                } else {
+                    console.err("[ERR]: self_sign_error");
+                    r(false);
+                }
+            }
+            else r(data);
+        })
+    });
 }
 
 async function start_server() {
@@ -50,6 +74,7 @@ async function start_server() {
 let pending_domains = [];
 
 let taken_mutex = false;
+
 async function add_domain(new_domain) {
     // create certs;
     pending_domains.push(new_domain);
