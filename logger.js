@@ -2,7 +2,7 @@
 const fs = require("fs");
 
 module.exports = {
-    record: (original_request, warped_request, original_response, warped_response, client_data) => {
+    record: (domain,original_request, warped_request, original_response, warped_response, client_data) => {
         let path = "persistence/recordings/" + client_data.client_ip.split(":").join("-");
         let name = +  new Date().getTime() + ".json";
         let info = {

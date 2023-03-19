@@ -31,7 +31,7 @@ const app = async function (req, res) {
             body: warped_body
         });
 
-        // console.log(req)
+        console.log("acaban de pedir la url", url)
         const opt = {
             method: req.method,
             qs: req.query,
@@ -43,7 +43,7 @@ const app = async function (req, res) {
         // console.log(opt)
         request(opt, (error, response) => {
             let original_response = clone({ headers: response.headers, body: response.body, statusCode: response.statusCode })
-            let [warped_headers, warped_body, warped_statusCode] = response_warp(req.headers, response.body, response.statusCode);
+            let [warped_headers, warped_body, warped_statusCode] = response_warp(response.headers, response.body, response.statusCode);
 
             let warped_response = clone({ headers: warped_headers, body: warped_body, statusCode: warped_statusCode })
 
@@ -51,6 +51,7 @@ const app = async function (req, res) {
             res.end(warped_body);
             console.log("calling record");
             record(
+                url,
                 original_request,
                 warped_request,
                 original_response,
@@ -63,9 +64,6 @@ const app = async function (req, res) {
         })
     })
 
-    // req.pipe(request({ qs: req.query, uri: url, lookup: domain_to_legit_ip }, (error, response, body) => {
-    //   
-    // })).pipe(res);
 
 }
 
@@ -97,7 +95,7 @@ async function domain_to_legit_ip(domain, op, cb) {
     // console.log("dns_response:", answers, rcode);
 
     ip = answers.filter(({ data, type }) => data && type == "A")[0].data;
-    console.log("legit ip for", domain, "is", ip, answers);
+    // console.log("legit ip for", domain, "is", ip, answers);
 
     if (cb) {
         cb(false, ip, 4);
@@ -111,4 +109,4 @@ function clone(item) {
     return JSON.parse(JSON.stringify(item));
 }
 
-module.exports = { app, domain_to_legit_ip };
+module.exports = { app };

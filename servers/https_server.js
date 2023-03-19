@@ -22,19 +22,17 @@ let secureContextMemo = {};
 
 async function getSecureContext(domain, cb) {
     // console.log("certificate for", domain);
-    await add_domain(domain)
-    let key = await tryHardRead('ssl/certs/general/key.pem');
-    let cert = await tryHardRead('ssl/certs/servers/' + domain + "/cert.pem");
-    let ca = await tryHardRead('ssl/certs/ca/ca-cert.pem');
-
 
     if (!secureContextMemo[domain]) {
+        await add_domain(domain)
+        let key = await tryHardRead('ssl/certs/general/key.pem');
+        let cert = await tryHardRead('ssl/certs/servers/' + domain + "/cert.pem");
+        let ca = await tryHardRead('ssl/certs/ca/ca-cert.pem');
+    
         secureContextMemo[domain] = tls.createSecureContext({
             key, cert, ca,
         });
     }
-
-
 
     if (cb) {
         cb(null, secureContextMemo[domain]);
@@ -91,7 +89,13 @@ async function add_domain(new_domain) {
     taken_mutex = false;
 }
 
-module.exports = { add_domain }
+const {DOMAINS_UNDER_ATTACK} = require("../config");
+DOMAINS_UNDER_ATTACK.forEach((domain)=>{
+    getSecureContext(domain,()=>{
+        console.log("the ssl is signed for", domain);
+    });
+
+})
 
 
 start_server()

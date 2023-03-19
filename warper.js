@@ -1,5 +1,9 @@
 function petition_warp(headers, body, url) {
 
+    if(headers["accept-encoding"]){
+        delete headers["accept-encoding"];
+    }
+
     return [headers, body, url]
 }
 

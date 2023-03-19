@@ -1,0 +1,70 @@
+{
+    "original_request": {
+        "url": "http://example.com/",
+        "headers": {
+            "host": "example.com",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/111.0",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "accept-language": "en-GB,en;q=0.5",
+            "accept-encoding": "gzip, deflate",
+            "dnt": "1",
+            "connection": "keep-alive",
+            "upgrade-insecure-requests": "1",
+            "if-modified-since": "Thu, 17 Oct 2019 07:18:26 GMT",
+            "if-none-match": "\"3147526947\""
+        },
+        "body": ""
+    },
+    "warped_request": {
+        "url": "http://example.com/",
+        "headers": {
+            "host": "example.com",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/111.0",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "accept-language": "en-GB,en;q=0.5",
+            "accept-encoding": "gzip, deflate",
+            "dnt": "1",
+            "connection": "keep-alive",
+            "upgrade-insecure-requests": "1",
+            "if-modified-since": "Thu, 17 Oct 2019 07:18:26 GMT",
+            "if-none-match": "\"3147526947\""
+        },
+        "body": ""
+    },
+    "original_response": {
+        "headers": {
+            "accept-ranges": "bytes",
+            "age": "161695",
+            "cache-control": "max-age=604800",
+            "date": "Sat, 18 Mar 2023 11:48:09 GMT",
+            "etag": "\"3147526947\"",
+            "expires": "Sat, 25 Mar 2023 11:48:09 GMT",
+            "last-modified": "Thu, 17 Oct 2019 07:18:26 GMT",
+            "server": "ECS (dcb/7FA5)",
+            "vary": "Accept-Encoding",
+            "x-cache": "HIT"
+        },
+        "body": "",
+        "statusCode": 304
+    },
+    "warped_response": {
+        "headers": {
+            "host": "example.com",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/111.0",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+            "accept-language": "en-GB,en;q=0.5",
+            "accept-encoding": "gzip, deflate",
+            "dnt": "1",
+            "connection": "keep-alive",
+            "upgrade-insecure-requests": "1",
+            "if-modified-since": "Thu, 17 Oct 2019 07:18:26 GMT",
+            "if-none-match": "\"3147526947\""
+        },
+        "body": "",
+        "statusCode": 304
+    },
+    "client_data": {
+        "client_ip": "::ffff:192.168.1.165",
+        "client_port": 57381
+    }
+}
