@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dhcp": "^0.2.20",
     "dns-query": "^0.11.2",
     "netcat": "^1.5.0",
     "original-url": "^1.2.3",

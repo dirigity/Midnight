@@ -1,0 +1,54 @@
+{
+  "name": "dhcp",
+  "title": "dhcp",
+  "version": "0.2.20",
+  "homepage": "https://github.com/infusion/node-dhcp",
+  "bugs": {
+    "url": "https://github.com/infusion/node-dhcp/issues"
+  },
+  "description": "A DHCP server written in JavaScript",
+  "keywords": [
+    "dhcp",
+    "network",
+    "server",
+    "daemon",
+    "ip",
+    "ethernet",
+    "net",
+    "bootp",
+    "dhclient",
+    "udp"
+  ],
+  "author": "Robert Eisele <robert@xarg.org> (http://www.xarg.org/)",
+  "main": "lib/dhcp.js",
+  "private": false,
+  "readmeFilename": "README.md",
+  "directories": {
+    "example": "./examples",
+    "bin": "./bin",
+    "lib": "./lib",
+    "test": "./tests"
+  },
+  "license": "MIT OR GPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/infusion/node-dhcp.git"
+  },
+  "bin": {
+    "dhcp": "./bin/dhcp-cli.js",
+    "dhcpd": "./bin/dhcpd-cli.js"
+  },
+  "engines": {
+    "node": ">=5.10.0"
+  },
+  "scripts": {
+    "test": "mocha tests/*.js"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "should": "*"
+  },
+  "dependencies": {
+    "minimist": "*"
+  }
+}
