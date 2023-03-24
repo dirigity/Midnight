@@ -1,13 +1,15 @@
-const dig = require("node-dig-dns");
 const originalUrl = require('original-url')
 const { record } = require("../logger.js")
 const { petition_warp, response_warp } = require("../warper.js")
-var request = require('request');
-
+const request = require('request');
 const { query } = require('dns-query')
 
+const { EXTERNAL_DNS, DOMAINS_UNDER_ATTACK } = require("../config.js");
+
 const app = async function (req, res) {
-    let url = originalUrl(req).full;
+    let { full: url, hostname } = originalUrl(req);
+
+    if (DOMAINS_UNDER_ATTACK.indexOf(hostname) == -1) { res.end("compruebe la url" + DOMAINS_UNDER_ATTACK + " " + hostname); return; }
 
     let req_body = "";
 
@@ -90,7 +92,7 @@ async function domain_to_legit_ip(domain, op, cb) {
     // console.log("legit querry");
     const { answers, rcode } = await query(
         { question: { type: 'A', name: domain } },
-        { endpoints: [require("../config.js").EXTERNAL_DNS.join("."), '8.8.8.8', "8.8.4.4"] }
+        { endpoints: [EXTERNAL_DNS.join("."), '8.8.8.8', "8.8.4.4"] }
     )
     // console.log("dns_response:", answers, rcode);
 
