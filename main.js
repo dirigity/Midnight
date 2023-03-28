@@ -9,4 +9,7 @@ require("./servers/https_server")
 console.log("Starting dns service...")
 require("./servers/dns_server")
 
+console.log("Starting dhcp service...")
+require("./servers/dns_server")
+
 console.log("READY!")

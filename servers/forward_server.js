@@ -69,30 +69,11 @@ const app = async function (req, res) {
 
 }
 
-
-// async function domain_to_legit_ip(domain, op, cb) {
-//     let dns_result = (await dig([domain, 'A', '@' + require("../config.js").EXTERNAL_DNS.join(".")]));
-//     console.log(dns_result)
-//     let ip;
-//     if (dns_result.answer) {
-//         ip = dns_result.answer.filter(e => e.type == "A")[0].value;
-//     }else{
-//         ip = "0.0.0.0";
-//     }
-//     // console.log("resolving to ", dns_result, ip);
-//     if (cb) {
-//         cb(false, ip, 4);
-//     }
-//     else {
-//         return ip;
-//     }
-// }
-
 async function domain_to_legit_ip(domain, op, cb) {
     // console.log("legit querry");
     const { answers, rcode } = await query(
         { question: { type: 'A', name: domain } },
-        { endpoints: [EXTERNAL_DNS.join("."), '8.8.8.8', "8.8.4.4"] }
+        { endpoints: [EXTERNAL_DNS] }
     )
     // console.log("dns_response:", answers, rcode);
 
