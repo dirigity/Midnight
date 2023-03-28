@@ -13,6 +13,7 @@
     "dhcp": "^0.2.20",
     "dns-query": "^0.11.2",
     "netcat": "^1.5.0",
+    "network": "^0.6.1",
     "original-url": "^1.2.3",
     "request": "^2.88.2"
   }

