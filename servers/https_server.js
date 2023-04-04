@@ -86,12 +86,11 @@ async function add_domain(new_domain) {
 const boot = async () => {
 
     const { DOMAINS_UNDER_ATTACK } = require("../config");
-    DOMAINS_UNDER_ATTACK.forEach((domain) => {
-        getSecureContext(domain, () => {
+    await Promise.all(DOMAINS_UNDER_ATTACK.map(async (domain) => {
+        await getSecureContext(domain, () => {
             console.log("the ssl is signed for", domain);
         });
-
-    })
+    }))
 
     const httpsOptions = {
         SNICallback: getSecureContext,

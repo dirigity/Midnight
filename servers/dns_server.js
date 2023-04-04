@@ -43,15 +43,11 @@ const boot = async () => {
     });
 
     server.on('request', (request, response, rinfo) => {
-        console.log(request.header.id, request.questions[0]);
+        console.log(request.header.id, request.questions[0], request);
     });
 
     server.on('requestError', (error) => {
         console.log('Client sent an invalid request', error);
-    });
-
-    server.on('listening', () => {
-        console.log(server.addresses());
     });
 
     server.on('close', () => {
@@ -59,24 +55,29 @@ const boot = async () => {
     });
 
     // TODO open multiple servers for every ip
-    (async () => {
-        server.listen({
-            // Optionally specify port, address and/or the family of socket() for udp server:
-            udp: {
-                port: 53,
-                address: await GET_EXPOSED_IP(),
-                type: "udp4",  // IPv4 or IPv6 (Must be either "udp4" or "udp6")
-            },
+    server.listen({
+        // Optionally specify port, address and/or the family of socket() for udp server:
+        udp: {
+            port: 53,
+            address: await GET_EXPOSED_IP(),
+            type: "udp4",  // IPv4 or IPv6 (Must be either "udp4" or "udp6")
+        },
 
-            // Optionally specify port and/or address for tcp server:
-            tcp: {
-                port: 53,
-                address: await GET_EXPOSED_IP(),
-            },
-        });
-    })()
+        // Optionally specify port and/or address for tcp server:
+        tcp: {
+            port: 53,
+            address: await GET_EXPOSED_IP(),
+        },
+    });
     // // eventually
     // server.close();
+
+    await new Promise((r) => {
+        server.on('listening', () => {
+            console.log(server.addresses());
+            r();
+        });
+    })
 }
 
 module.exports = { boot };
