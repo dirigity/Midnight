@@ -23,7 +23,7 @@ const boot = async () => {
                 const f = ({ address }) => address;
                 const addresses = query.answers.filter(f).map(f);
                 if (addresses.length != 0) {
-                    console.log("[DNS]: bypassing", name, "->", addresses)
+                    // console.log("[DNS]: bypassing", name, "->", addresses)
 
                     response.answers.push({
                         name,
@@ -34,12 +34,12 @@ const boot = async () => {
                     });
                     send(response);
                 } else {
-                    console.log("[DNS]: ignoring", name)
+                    // console.log("[DNS]: ignoring", name)
                     send(response);
                 }
 
             } else {
-                console.log("[DNS]: mascarade", name)
+                console.log("[DNS]: mascarade", name, "->", await GET_EXPOSED_IP())
 
                 response.answers.push({
                     name,

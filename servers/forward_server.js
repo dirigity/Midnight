@@ -2,7 +2,9 @@ const originalUrl = require('original-url')
 const { record } = require("../logger.js")
 const { petition_warp, response_warp } = require("../warper.js")
 const request = require('request');
-const { query } = require('dns-query')
+const dns2 = require('dns2');
+const { UDPClient } = dns2;
+const resolve = UDPClient();
 
 const { EXTERNAL_DNS, DOMAINS_UNDER_ATTACK } = require("../config.js");
 
@@ -70,22 +72,23 @@ const app = async function (req, res) {
 }
 
 async function domain_to_legit_ip(domain, op, cb) {
-    // console.log("legit querry");
-    const { answers, rcode } = await query(
-        { question: { type: 'A', name: domain } },
-        { endpoints: [EXTERNAL_DNS] }
-    )
-    // console.log("dns_response:", answers, rcode);
 
-    ip = answers.filter(({ data, type }) => data && type == "A")[0].data;
-    // console.log("legit ip for", domain, "is", ip, answers);
+    const query = await resolve(domain);
 
+    const f = ({ address }) => address;
+    const addresses = query.answers.filter(f).map(f);
+    if (addresses.length != 0) {
+        ip = addresses[0];
+    }else{
+        throw "AaAaAa foward server domain to legit ip";
+    }
     if (cb) {
         cb(false, ip, 4);
     }
     else {
         return ip;
     }
+
 }
 
 function clone(item) {

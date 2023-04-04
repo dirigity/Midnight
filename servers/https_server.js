@@ -20,7 +20,7 @@ async function sh(cmd) {
 let secureContextCache = {};
 
 async function getSecureContext(domain, cb) {
-    // console.log("certificate for", domain);
+    console.log("getSecureContext for", domain);
 
     if (!secureContextCache[domain]) {
         await add_domain(domain)
@@ -68,13 +68,14 @@ let pending_domains = [];
 let taken_mutex = false;
 
 async function add_domain(new_domain) {
-    // create certs;
     pending_domains.push(new_domain);
     if (!taken_mutex) {
         taken_mutex = true;
 
         while (pending_domains.length > 0) {
-            let command = "bash -c \"bash ssl/build_server.sh " + pending_domains.pop() + " ssl\"";
+            const domain = pending_domains.pop();
+            console.log("executing signing routine for ", domain)
+            let command = "bash -c \"bash ssl/build_server.sh " + domain + " ssl\"";
             // console.log(command)
             await sh(command);
         }
@@ -87,6 +88,7 @@ const boot = async () => {
 
     const { DOMAINS_UNDER_ATTACK } = require("../config");
     await Promise.all(DOMAINS_UNDER_ATTACK.map(async (domain) => {
+
         await getSecureContext(domain, () => {
             console.log("the ssl is signed for", domain);
         });
