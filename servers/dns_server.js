@@ -17,16 +17,29 @@ const boot = async () => {
 
 
             if (DOMAINS_UNDER_ATTACK.indexOf(name) == -1) {
-                console.log("proxifing   ", name)
 
                 const query = await resolve(name);
-                console.log(query);
 
-                response.answers.push(query.answers[0]);
+                const f = ({ address }) => address;
+                const addresses = query.answers.filter(f).map(f);
+                if (addresses.length != 0) {
+                    console.log("[DNS]: bypassing", name, "->", addresses)
 
-                send(response);
+                    response.answers.push({
+                        name,
+                        type: Packet.TYPE.A,
+                        class: Packet.CLASS.IN,
+                        ttl: 300,
+                        address: addresses[0]
+                    });
+                    send(response);
+                } else {
+                    console.log("[DNS]: ignoring", name)
+                    send(response);
+                }
+
             } else {
-                console.log("marcaradeing", name)
+                console.log("[DNS]: mascarade", name)
 
                 response.answers.push({
                     name,
@@ -42,28 +55,14 @@ const boot = async () => {
         }
     });
 
-    server.on('request', (request, response, rinfo) => {
-        console.log(request.header.id, request.questions[0], request);
-    });
-
-    server.on('requestError', (error) => {
-        console.log('Client sent an invalid request', error);
-    });
-
-    server.on('close', () => {
-        console.log('server closed');
-    });
-
-    // TODO open multiple servers for every ip
+    //TODO open multiple servers for every ip
     server.listen({
-        // Optionally specify port, address and/or the family of socket() for udp server:
         udp: {
             port: 53,
             address: await GET_EXPOSED_IP(),
-            type: "udp4",  // IPv4 or IPv6 (Must be either "udp4" or "udp6")
+            type: "udp4",
         },
 
-        // Optionally specify port and/or address for tcp server:
         tcp: {
             port: 53,
             address: await GET_EXPOSED_IP(),
@@ -74,7 +73,7 @@ const boot = async () => {
 
     await new Promise((r) => {
         server.on('listening', () => {
-            console.log(server.addresses());
+            // console.log(server.addresses());
             r();
         });
     })
