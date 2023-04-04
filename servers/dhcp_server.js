@@ -1,6 +1,7 @@
 const { GET_EXPOSED_IP, GET_GATEWAY, GET_IP_RANGE } = require("../config");
 const dhcp = require('dhcp');
-(async () => {
+
+const boot = async () => {
     const EXPOSED_IP = await GET_EXPOSED_IP()
     const GATEWAY = await GET_GATEWAY()
     const IP_RANGE = await GET_IP_RANGE();
@@ -18,4 +19,7 @@ const dhcp = require('dhcp');
     });
 
     s.listen();
-})()
+
+}
+
+module.exports = { boot };

@@ -16,14 +16,13 @@ async function sh(cmd) {
     });
 }
 
-let server;
 
-let secureContextMemo = {};
+let secureContextCache = {};
 
 async function getSecureContext(domain, cb) {
     // console.log("certificate for", domain);
 
-    if (!secureContextMemo[domain]) {
+    if (!secureContextCache[domain]) {
         await add_domain(domain)
         let key = await tryHardRead('ssl/certs/general/key.pem');
         let cert = await tryHardRead('ssl/certs/servers/' + domain + "/cert.pem") + "\n" + await tryHardRead('ssl/certs/ca/ca-cert.pem');
@@ -34,17 +33,18 @@ async function getSecureContext(domain, cb) {
         }
         // console.log(opt)
 
-        secureContextMemo[domain] = tls.createSecureContext(opt);
+        secureContextCache[domain] = tls.createSecureContext(opt);
         // secureContextMemo.addCACert(ca);
     }
 
     if (cb) {
-        cb(null, secureContextMemo[domain]);
+        cb(null, secureContextCache[domain]);
         return
     } else {
-        return secureContextMemo[domain]
+        return secureContextCache[domain]
     }
 }
+
 
 function tryHardRead(file_path, n = 10) {
     return new Promise((r) => {
@@ -62,16 +62,6 @@ function tryHardRead(file_path, n = 10) {
     });
 }
 
-async function start_server() {
-    if (server) server.close();
-
-    const httpsOptions = {
-        SNICallback: getSecureContext,
-    };
-
-    server = https.createServer(httpsOptions, require("./forward_server").app);
-    server.listen(443);
-}
 
 let pending_domains = [];
 
@@ -93,14 +83,24 @@ async function add_domain(new_domain) {
     taken_mutex = false;
 }
 
-const { DOMAINS_UNDER_ATTACK } = require("../config");
-DOMAINS_UNDER_ATTACK.forEach((domain) => {
-    getSecureContext(domain, () => {
-        console.log("the ssl is signed for", domain);
-    });
+const boot = async () => {
 
-})
+    const { DOMAINS_UNDER_ATTACK } = require("../config");
+    DOMAINS_UNDER_ATTACK.forEach((domain) => {
+        getSecureContext(domain, () => {
+            console.log("the ssl is signed for", domain);
+        });
+
+    })
+
+    const httpsOptions = {
+        SNICallback: getSecureContext,
+    };
+
+    let server = https.createServer(httpsOptions, require("./forward_server").app);
+    server.listen(443);
 
 
-start_server()
-console.log("HTTPS up")
+}
+
+module.exports = { boot };

