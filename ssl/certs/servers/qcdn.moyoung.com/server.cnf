@@ -1,0 +1,18 @@
+[req]
+distinguished_name = req_distinguished_name
+prompt = no
+req_extensions = req_ext
+
+[req_distinguished_name]
+C   = ES
+ST  = ser_state
+L   = ser_city
+O   = ser_org
+OU  = ser_dep
+CN  = server_common_name
+
+[req_ext]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = qcdn.moyoung.com

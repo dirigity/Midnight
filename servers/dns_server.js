@@ -1,10 +1,10 @@
 const dns2 = require('dns2');
 
-const { Packet } = dns2;
-const { UDPClient } = dns2;
+const { Packet, UDPClient } = dns2;
 const resolve = UDPClient();
 
-const { GET_EXPOSED_IP, DOMAINS_UNDER_ATTACK, EXTERNAL_DNS } = require("../config");
+const { GET_EXPOSED_IP } = require("../config");
+const DOMAIN_CONFIG = require("../attack").domain_config;
 
 const boot = async () => {
 
@@ -16,7 +16,7 @@ const boot = async () => {
             const { name } = question;
 
 
-            if (DOMAINS_UNDER_ATTACK.indexOf(name) == -1) {
+            if (!DOMAIN_CONFIG[name]) {
 
                 const query = await resolve(name);
 

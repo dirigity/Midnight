@@ -1,21 +1,7 @@
 const https = require('https');
 const fs = require('fs');
 const tls = require("tls");
-const { exec } = require("child_process")
-
-
-async function sh(cmd) {
-    return new Promise(function (resolve, reject) {
-        exec(cmd, (err, stdout, stderr) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve({ stdout, stderr });
-            }
-        });
-    });
-}
-
+const {sh} = require("../utils.js") 
 
 let secureContextCache = {};
 
@@ -31,7 +17,7 @@ async function getSecureContext(domain, cb) {
         const opt = {
             key, cert, ca
         }
-        // console.log(opt)
+        console.log(opt)
 
         secureContextCache[domain] = tls.createSecureContext(opt);
         // secureContextMemo.addCACert(ca);
@@ -86,12 +72,13 @@ async function add_domain(new_domain) {
 
 const boot = async () => {
 
-    const { DOMAINS_UNDER_ATTACK } = require("../config");
-    await Promise.all(DOMAINS_UNDER_ATTACK.map(async (domain) => {
+    const DOMAIN_CONFIG = require("../attack").domain_config;
+    await Promise.all(Object.keys(DOMAIN_CONFIG).map(async (domain) => {
 
         await getSecureContext(domain, () => {
             console.log("the ssl is signed for", domain);
         });
+
     }))
 
     const httpsOptions = {

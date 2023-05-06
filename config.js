@@ -42,7 +42,5 @@ module.exports = {
     GET_GATEWAY: async () => {
         return (await get_active_interface()).gateway_ip;
     },
-    GET_EXTERNAL_DNS: async () => [8, 8, 8, 8],
-    DOMAINS_UNDER_ATTACK: ["example.com", "api.moyoung.com", "wr.moyoung.com", "qcdn.moyoung.com"]
 };
 
