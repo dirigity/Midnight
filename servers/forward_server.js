@@ -4,16 +4,16 @@ const request = require('request');
 const { UDPClient } = require('dns2');
 const resolve = UDPClient();
 
-const DOMAIN_CONFIG = require("../attack.js").domain_config;
-
-const BYPASS = (...a) => a;
+const {DOMAIN_CONFIG} = require("../config.js");
 
 const app = async function (req, res) {
     let { full: url, hostname } = originalUrl(req);
 
     if (DOMAIN_CONFIG[hostname] == -1) {
-        res.end("compruebe la url:" + hostname); return;
+        res.end("compruebe la url:" + hostname);
+        return;
     }
+    let { petition_warp, response_warp, logging } = DOMAIN_CONFIG[hostname];
 
     let req_body = "";
 
@@ -21,7 +21,7 @@ const app = async function (req, res) {
         req_body += data;
     });
 
-    req.on("end", () => {
+    req.on("end", async () => {
 
         let original_request = clone({
             url,
@@ -29,16 +29,20 @@ const app = async function (req, res) {
             body: req_body
         });
 
-        let petition_warp = DOMAIN_CONFIG[hostname].petition_warp || BYPASS;
-        let response_warp = DOMAIN_CONFIG[hostname].response_warp || BYPASS;
+        let warped_request = "no_warp";
 
-        let [warped_headers, warped_body, warped_url] = petition_warp(req.headers, req_body, url);
+        let warped_headers = req.headers;
+        let warped_body = req_body;
+        let warped_url = url;
+        if (petition_warp) {
+            [warped_headers, warped_body, warped_url] = petition_warp(req.headers, req_body, url);
 
-        let warped_request = clone({
-            url: warped_url,
-            headers: warped_headers,
-            body: warped_body
-        });
+            warped_request = clone({
+                url: warped_url,
+                headers: warped_headers,
+                body: warped_body
+            });
+        }
 
         console.log("acaban de pedir la url", url)
         const opt = {
@@ -51,25 +55,39 @@ const app = async function (req, res) {
         }
         // console.log(opt)
         request(opt, (error, response) => {
-            let original_response = clone({ headers: response.headers, body: response.body, statusCode: response.statusCode })
-            let [warped_headers, warped_body, warped_statusCode] = response_warp(response.headers, response.body, response.statusCode);
+            // console.log(error, response);
+            let original_response = clone({
+                headers: response.headers, body: response.body, statusCode: response.statusCode
+            })
 
-            let warped_response = clone({ headers: warped_headers, body: warped_body, statusCode: warped_statusCode })
+            let warped_response = "no_warp"
+
+            let warped_headers = response.headers;
+            let warped_body = response.body;
+            let warped_statusCode = response.statusCode;
+
+            if (response_warp) {
+                [warped_headers, warped_body, warped_statusCode] = response_warp(response.headers, response.body, response.statusCode);
+                warped_response = clone({ headers: warped_headers, body: warped_body, statusCode: warped_statusCode })
+            }
 
             res.writeHead(warped_statusCode, warped_headers);
             res.end(warped_body);
-            console.log("calling record");
-            record(
-                url,
-                original_request,
-                warped_request,
-                original_response,
-                warped_response,
-                {
-                    client_ip: req.socket.remoteAddress,
-                    client_port: req.socket.remotePort
-                }
-            )
+            if (logging) {
+                console.log("calling record");
+
+                record(
+                    url,
+                    original_request,
+                    warped_request,
+                    original_response,
+                    warped_response,
+                    {
+                        client_ip: req.socket.remoteAddress,
+                        client_port: req.socket.remotePort
+                    }
+                )
+            }
         })
     })
 

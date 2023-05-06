@@ -18,7 +18,7 @@ function scape(str) {
 module.exports = {
     record: (domain, original_request, warped_request, original_response, warped_response, client_data) => {
         let path = "persistence/recordings/" + scape(client_data.client_ip) + "/" + scape(domain.split("?")[0]);
-        console.log("path: ", path);
+        // console.log("path: ", path);
         let name = +  new Date().getTime() + ".json";
         let info = {
             original_request, warped_request, original_response, warped_response, client_data

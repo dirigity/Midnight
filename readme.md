@@ -31,3 +31,21 @@ netsh interface ip delete dnsservers "WiFi" all
 # directiva de inspecion de certificado para firefox
 
 about:certificate?cert=
+
+# regenerate CA 
+
+bash ssl/build_ca.sh ssl
+
+# sign server
+
+bash ssl/build_server.sh [domain] ssl
+
+# check integrity
+
+
+openssl pkey -pubout -in ssl/certs/general/key.pem | openssl sha256
+openssl req -pubkey -in ssl/certs/servers/[domain]/csr.pem -noout | openssl sha256
+openssl x509 -pubkey -in ssl/certs/servers/[domain]/cert.pem -noout | openssl sha256
+
+openssl req -pubkey -in ssl/certs/servers/example.com/csr.pem -noout | openssl sha256
+openssl x509 -pubkey -in ssl/certs/servers/example.com/cert.pem -noout | openssl sha256

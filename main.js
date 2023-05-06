@@ -1,12 +1,19 @@
-const { fs, sh } = require("./utils");
+const { sh, delete_dir_contents } = require("./utils");
+
+const REBUILD_SSL = true;
 
 (async () => {
 
-    console.log("rebuild CA");
+    if (REBUILD_SSL) {
+        console.log("rebuild CA");
+        delete_dir_contents("ssl/certs/ca");
+        delete_dir_contents("ssl/certs/general");
+        delete_dir_contents("ssl/certs/servers");
 
-    let command = "bash -c \"bash ssl/build_ca.sh ssl\"";
-    // console.log(command)
-    await sh(command);
+        let command = "bash -c \"bash ssl/build_ca.sh ssl\"";
+        // console.log(command)
+        await sh(command);
+    }
 
     console.log("exposed ip: ", await require("./config").GET_EXPOSED_IP())
 

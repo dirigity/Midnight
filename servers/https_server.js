@@ -6,7 +6,7 @@ const {sh} = require("../utils.js")
 let secureContextCache = {};
 
 async function getSecureContext(domain, cb) {
-    console.log("getSecureContext for", domain);
+    // console.log("getSecureContext for", domain);
 
     if (!secureContextCache[domain]) {
         await add_domain(domain)
@@ -17,7 +17,7 @@ async function getSecureContext(domain, cb) {
         const opt = {
             key, cert, ca
         }
-        console.log(opt)
+        // console.log(opt)
 
         secureContextCache[domain] = tls.createSecureContext(opt);
         // secureContextMemo.addCACert(ca);
@@ -72,7 +72,7 @@ async function add_domain(new_domain) {
 
 const boot = async () => {
 
-    const DOMAIN_CONFIG = require("../attack").domain_config;
+    const {DOMAIN_CONFIG} = require("../config");
     await Promise.all(Object.keys(DOMAIN_CONFIG).map(async (domain) => {
 
         await getSecureContext(domain, () => {

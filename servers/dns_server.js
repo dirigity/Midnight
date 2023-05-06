@@ -3,8 +3,7 @@ const dns2 = require('dns2');
 const { Packet, UDPClient } = dns2;
 const resolve = UDPClient();
 
-const { GET_EXPOSED_IP } = require("../config");
-const DOMAIN_CONFIG = require("../attack").domain_config;
+const { GET_EXPOSED_IP, DOMAIN_CONFIG } = require("../config");
 
 const boot = async () => {
 

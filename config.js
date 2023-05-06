@@ -42,5 +42,36 @@ module.exports = {
     GET_GATEWAY: async () => {
         return (await get_active_interface()).gateway_ip;
     },
+    DOMAIN_CONFIG: {
+        "example.com": {
+            logging: true,
+            petition_warp: (headers, body, url) => {
+
+                if (headers["accept-encoding"]) {
+                    delete headers["accept-encoding"];
+                }
+
+                return [headers, body, url]
+            },
+
+            response_warp: (headers, body, statusCode) => {
+                body = body.split("illustrative").join("nefarious");
+                if (headers["content-length"]) {
+                    headers["content-length"] = body.length + "";
+                }
+
+                return [headers, body, statusCode]
+            }
+        },
+        // "api.moyoung.com": {
+        //     logging: true,
+        // },
+        // "wr.moyoung.com": {
+        //     logging: true,
+        // },
+        // "qcdn.moyoung.com": {
+        //     logging: true,
+        // },
+    }
 };
 
